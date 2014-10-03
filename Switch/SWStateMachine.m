@@ -18,8 +18,8 @@
 #import "SWWindow.h"
 
 
-#if 1
-    #define StateLog(fmt, ...) NSLog(@"State machine %p %@", self, [NSString stringWithFormat:fmt, ##__VA_ARGS__])
+#ifdef STATE_MACHINE_DEBUG
+    #define StateLog NSLog
 #else
     #define StateLog(...)
 #endif
@@ -188,7 +188,7 @@
 
 - (void)displayTimerCompleted;
 {
-    StateLog(@"display timer completed");
+    StateLog(@"State machine display timer completed");
     self.displayTimer = false;
 }
 
@@ -196,7 +196,7 @@
 
 - (_Bool)incrementWithInvoke:(_Bool)invokesInterface direction:(SWIncrementDirection)direction isRepeating:(_Bool)autorepeat;
 {
-    StateLog(@"key event with invoke:%@ direction:%@ repeating:%@",
+    StateLog(@"State machine key event with invoke:%@ direction:%@ repeating:%@",
           invokesInterface ? @"true" : @"false",
           direction == SWIncrementDirectionIncreasing ? @"increasing" : @"decreasing",
           autorepeat ? @"true" : @"false");
@@ -227,7 +227,7 @@
 
 - (_Bool)closeWindow;
 {
-    StateLog(@"event close window");
+    StateLog(@"State machine event close window");
 
     if (self.interfaceVisible) {
         if (self.selectedWindow) {
@@ -241,7 +241,7 @@
 
 - (_Bool)cancelInvocation;
 {
-    StateLog(@"event cancel invocation");
+    StateLog(@"State machine event cancel invocation");
 
     // Setting pendingSwitch here is to work around #105
     self.pendingSwitch = false;
@@ -255,7 +255,7 @@
 
 - (void)endInvocation;
 {
-    StateLog(@"event end invocation");
+    StateLog(@"State machine event end invocation");
 
     if (self.invoked) {
         self.pendingSwitch = true;
@@ -267,7 +267,7 @@
 
 - (void)selectWindow:(SWWindow *)window;
 {
-    StateLog(@"mouse select window group: %@", window);
+    StateLog(@"State machine mouse select window group: %@", window);
 
     if (!self.windowList) { return; }
 
@@ -280,7 +280,7 @@
 
 - (void)activateWindow:(SWWindow *)window;
 {
-    StateLog(@"mouse activate window group: %@", window);
+    StateLog(@"State machine mouse activate window group: %@", window);
 
     if (!self.windowList) { return; }
 
@@ -299,7 +299,7 @@
 
 - (void)updateWindowList:(NSOrderedSet *)windowList;
 {
-    StateLog(@"update window groups: %@", windowList);
+    StateLog(@"State machine update window groups: %@", windowList);
 
     [self _updateWindowList:windowList];
 }
