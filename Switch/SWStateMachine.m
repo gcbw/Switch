@@ -57,21 +57,20 @@
 
 + (instancetype)stateMachineWithDelegate:(id<SWStateMachineDelegate>) delegate;
 {
+    if ([NSThread isMainThread]) {
+        return [[self alloc] initWithDelegate:delegate];
+    }
+
     __block SWStateMachine *result;
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
 
-    [[[RACSignal defer:^{
-        return [RACSignal return:[[self alloc] initWithDelegate:delegate]];
-    }] subscribeOn:[RACScheduler scheduler]]
-    subscribeNext:^(SWStateMachine *newInstance){
-        result = newInstance;
+    [[RACScheduler scheduler] schedule:^{
+        result = [[self alloc] initWithDelegate:delegate];
         dispatch_group_leave(group);
     }];
 
-    // Pump the runloop until the group is empty.
-    while(!despatch_group_yield(group));
-
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
     Check(result);
     return result;
 }

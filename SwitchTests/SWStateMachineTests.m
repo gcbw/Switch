@@ -718,8 +718,16 @@ static SWWindow *(^rwg)() = ^{
         [self.stateMachineUnderTest incrementWithInvoke:true direction:direction isRepeating:false];
         return;
     }
+
+    // State machine is inactive, everything should be off.
     XCTAssertNil(self.stateMachineUnderTest.windowList);
     XCTAssertNil(self.stateMachineUnderTest.selectedWindow);
+
+    XCTAssertFalse(self.stateMachineUnderTest.interfaceVisible);
+    XCTAssertFalse(self.stateMachineUnderTest.windowListUpdates);
+    XCTAssertFalse(self.stateMachineUnderTest.displayTimer);
+    XCTAssertFalse(self.stateMachineUnderTest.pendingSwitch);
+    XCTAssertFalse(self.stateMachineUnderTest.active);
 
     [self stateMachineExpectDisplayTimerStart:^{
         [self stateMachineExpectWindowListUpdates:true block:^{
@@ -729,6 +737,13 @@ static SWWindow *(^rwg)() = ^{
     
     XCTAssertNil(self.stateMachineUnderTest.windowList);
     XCTAssertNil(self.stateMachineUnderTest.selectedWindow);
+
+    XCTAssertTrue(self.stateMachineUnderTest.active);
+    XCTAssertTrue(self.stateMachineUnderTest.invoked);
+    XCTAssertTrue(self.stateMachineUnderTest.windowListUpdates);
+    XCTAssertTrue(self.stateMachineUnderTest.displayTimer);
+
+    XCTAssertFalse(self.stateMachineUnderTest.pendingSwitch);
 }
 
 - (void)stateMachineShowUIWithWindowList:(NSOrderedSet *)windowList;
@@ -1621,8 +1636,8 @@ static SWWindow *(^rwg)() = ^{
         @"ptestInvokeWindowListKeyReleasedSuccessfulRaiseWithMonkey",
     ];
 
-    #warning Tests fail when run in parallel, likely because RAC dispatches the first event of a signal asynchronously
-    dispatch_apply(ptests.count, dispatch_get_global_queue(0, 0), ^(size_t i) {
+    #warning OCMock is not thread-safe!
+    dispatch_apply(ptests.count, dispatch_queue_create("Serial test queue", DISPATCH_QUEUE_SERIAL), ^(size_t i) {
         NSLog(@"Test case %@ started.", ptests[i]);
         SWStateMachineTests *test = [SWStateMachineTests testCaseWithSelector:NSSelectorFromString(ptests[i])];
         [test setUp];
