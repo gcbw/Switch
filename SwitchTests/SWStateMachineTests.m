@@ -74,7 +74,7 @@ static SWWindow *(^rwg)() = ^{
 
     self.niceMock = false;
     self->_stateMachineDelegateMock = OCMStrictProtocolMock(@protocol(SWStateMachineDelegate));
-    self->_stateMachineUnderTest = [[SWStateMachine alloc] initWithDelegate:self.stateMachineDelegateMock];
+    self->_stateMachineUnderTest = [SWStateMachine stateMachineWithDelegate:self.stateMachineDelegateMock];
 
     self->_monkeyCount = 15;
 
@@ -709,7 +709,7 @@ static SWWindow *(^rwg)() = ^{
     self->_stateMachineDelegateMock = niceMock
                                     ? OCMProtocolMock(@protocol(SWStateMachineDelegate))
                                     : OCMStrictProtocolMock(@protocol(SWStateMachineDelegate));
-    self->_stateMachineUnderTest = [[SWStateMachine alloc] initWithDelegate:self.stateMachineDelegateMock];
+    self->_stateMachineUnderTest = [SWStateMachine stateMachineWithDelegate:self.stateMachineDelegateMock];
 }
 
 - (void)stateMachineInvokeWithDirection:(SWIncrementDirection)direction;
@@ -1621,12 +1621,8 @@ static SWWindow *(^rwg)() = ^{
         @"ptestInvokeWindowListKeyReleasedSuccessfulRaiseWithMonkey",
     ];
 
-    #warning Running tests in parallel doesn't work. Judging from the backtraces RAC is getting confused somewhere?
-    dispatch_queue_t queue = dispatch_queue_create("thing", DISPATCH_QUEUE_SERIAL);
-    // For a Good Time™, uncomment the line below. The tests fail in unexpected ways, and occasionally the testrunner will crash in the RAC scheduler queue.
-//    queue = dispatch_get_global_queue(0, 0);
-
-    dispatch_apply(ptests.count, queue, ^(size_t i) {
+    #warning Tests fail when run in parallel, likely because RAC dispatches the first event of a signal asynchronously
+    dispatch_apply(ptests.count, dispatch_get_global_queue(0, 0), ^(size_t i) {
         NSLog(@"Test case %@ started.", ptests[i]);
         SWStateMachineTests *test = [SWStateMachineTests testCaseWithSelector:NSSelectorFromString(ptests[i])];
         [test setUp];

@@ -18,8 +18,8 @@
 #import "SWWindow.h"
 
 
-#ifdef STATE_MACHINE_DEBUG
-    #define StateLog NSLog
+#if 1
+    #define StateLog(fmt, ...) NSLog(@"State machine %p %@", self, [NSString stringWithFormat:fmt, ##__VA_ARGS__])
 #else
     #define StateLog(...)
 #endif
@@ -54,6 +54,32 @@
 
 
 @implementation SWStateMachine
+
++ (instancetype)stateMachineWithDelegate:(id<SWStateMachineDelegate>) delegate;
+{
+    __block SWStateMachine *result;
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+
+    [[[RACSignal defer:^{
+        return [RACSignal return:[[self alloc] initWithDelegate:delegate]];
+    }] subscribeOn:[RACScheduler scheduler]]
+    subscribeNext:^(SWStateMachine *newInstance){
+        result = newInstance;
+        dispatch_group_leave(group);
+    }];
+
+    // Pump the runloop until the group is empty.
+    while(!despatch_group_yield(group));
+
+    Check(result);
+    return result;
+}
+
+- (instancetype)init;
+{
+    __builtin_trap();
+}
 
 - (instancetype)initWithDelegate:(id<SWStateMachineDelegate>) delegate;
 {
@@ -162,7 +188,7 @@
 
 - (void)displayTimerCompleted;
 {
-    StateLog(@"State machine display timer completed");
+    StateLog(@"display timer completed");
     self.displayTimer = false;
 }
 
@@ -170,7 +196,7 @@
 
 - (_Bool)incrementWithInvoke:(_Bool)invokesInterface direction:(SWIncrementDirection)direction isRepeating:(_Bool)autorepeat;
 {
-    StateLog(@"State machine key event with invoke:%@ direction:%@ repeating:%@",
+    StateLog(@"key event with invoke:%@ direction:%@ repeating:%@",
           invokesInterface ? @"true" : @"false",
           direction == SWIncrementDirectionIncreasing ? @"increasing" : @"decreasing",
           autorepeat ? @"true" : @"false");
@@ -201,7 +227,7 @@
 
 - (_Bool)closeWindow;
 {
-    StateLog(@"State machine event close window");
+    StateLog(@"event close window");
 
     if (self.interfaceVisible) {
         if (self.selectedWindow) {
@@ -215,7 +241,7 @@
 
 - (_Bool)cancelInvocation;
 {
-    StateLog(@"State machine event cancel invocation");
+    StateLog(@"event cancel invocation");
 
     // Setting pendingSwitch here is to work around #105
     self.pendingSwitch = false;
@@ -229,7 +255,7 @@
 
 - (void)endInvocation;
 {
-    StateLog(@"State machine event end invocation");
+    StateLog(@"event end invocation");
 
     if (self.invoked) {
         self.pendingSwitch = true;
@@ -241,7 +267,7 @@
 
 - (void)selectWindow:(SWWindow *)window;
 {
-    StateLog(@"State machine mouse select window group: %@", window);
+    StateLog(@"mouse select window group: %@", window);
 
     if (!self.windowList) { return; }
 
@@ -254,7 +280,7 @@
 
 - (void)activateWindow:(SWWindow *)window;
 {
-    StateLog(@"State machine mouse activate window group: %@", window);
+    StateLog(@"mouse activate window group: %@", window);
 
     if (!self.windowList) { return; }
 
@@ -273,7 +299,7 @@
 
 - (void)updateWindowList:(NSOrderedSet *)windowList;
 {
-    StateLog(@"State machine update window groups: %@", windowList);
+    StateLog(@"update window groups: %@", windowList);
 
     [self _updateWindowList:windowList];
 }
