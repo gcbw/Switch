@@ -32,13 +32,10 @@
 
 - (void)updateLayer;
 {
-    if (self.border) {
+    if( self.border ){
         self.layer.borderWidth = self.border;
-        self.layer.borderColor = [[[NSColor whiteColor] colorWithAlphaComponent:0.8] CGColor];
     }
-    
     self.layer.cornerRadius = self.radius;
-    self.layer.backgroundColor = [[[NSColor blackColor] colorWithAlphaComponent:0.3] CGColor];
 }
 
 @end

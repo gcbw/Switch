@@ -23,10 +23,13 @@
 {
     BailUnless(self = [super initWithFrame:frame], nil);
 
-    self.border = 0.0;
-    self.radius = kNNWindowRoundRectRadius;
+    self.border = 5.0;
+    self.radius = 0.0; //kNNWindowRoundRectRadius;
     self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-    
+
+    self.layer.borderColor = [[[NSColor whiteColor] colorWithAlphaComponent:0.5] CGColor];
+    self.layer.backgroundColor = [[[NSColor blackColor] colorWithAlphaComponent:0.7] CGColor];
+
     return self;
 }
 

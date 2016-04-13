@@ -19,5 +19,7 @@
 
 @property (nonatomic, assign) CGFloat border;
 @property (nonatomic, assign) CGFloat radius;
+//@property (nonatomic, assign) CGColorRef borderColor;
+//@property (nonatomic, assign) CGColorRef backgroundColor;
 
 @end

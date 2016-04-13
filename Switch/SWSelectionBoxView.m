@@ -22,11 +22,14 @@
 - (id)initWithFrame:(CGRect)frame
 {
     BailUnless(self = [super initWithFrame:frame], nil);
-    
+
     self.border = kNNItemBorderWidth;
-    self.radius = kNNSelectionRoundRectRadius;
+    self.radius = 0.0; //kNNSelectionRoundRectRadius;
     self.translatesAutoresizingMaskIntoConstraints = NO;
-    
+
+    self.layer.borderColor = [[[NSColor yellowColor] colorWithAlphaComponent:0.5] CGColor];
+    self.layer.backgroundColor = [[[NSColor blackColor] colorWithAlphaComponent:0.3] CGColor];
+
     return self;
 }
 
